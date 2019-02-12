@@ -46,35 +46,26 @@ func main() {
 
       log.Println(request)
 
+      var responseBody string
 
-
-      routes := map[string]func(Request)(string){
-        "/": getIndex,
-        "post": getPost,
-        "*": notFound,
+      switch request.path {
+      case "/":
+        responseBody = getIndex(request)
+      case "/post":
+        responseBody = getPost(request)
+      default:
+        responseBody = notFound(request)
       }
 
-      conn.Write([]byte(routes[request.path](request)))
 
-
-      // switch request.path {
-      // case "/":
-      //   conn.Write([]byte(getIndex(request)))
-      // case "/post":
-      //   conn.Write([]byte(getPost(request)))
-      // default:
-      //   conn.Write([]byte(notFound(request)))
-      // }
-
-
-      // conn.Write([]byte(response))
+      conn.Write([]byte(responseBody))
       conn.Close()
   }
 }
 
-func getIndex(req Request) (string) {
-  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
-<h1>home page<h1>`
+func getIndex(req Request) string {
+  body := `<h1>home page</h1>
+<p><a href="/post">post</a></p>`
 
   headers := `HTTP/1.1 200 OK
 Server: JasperGo
@@ -87,10 +78,10 @@ Content-Length: ` + strconv.Itoa(len(body))
   return headers + "\r\n\r\n" + body
 }
 
-func getPost(req Request) (string) {
-  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
-<h1>A Post<h1>
-<p>Lorem Ipsom</p>`
+func getPost(req Request) string {
+  body := `<h1>A Post</h1>
+<p>Lorem Ipsom</p>
+<p><a href="/">index</a></p>`
 
   headers := `HTTP/1.1 200 OK
 Server: JasperGo
@@ -103,9 +94,8 @@ Content-Length: ` + strconv.Itoa(len(body))
   return headers + "\r\n\r\n" + body
 }
 
-func notFound(req Request) (string) {
-  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
-<h1>404<h1>
+func notFound(req Request) string {
+  body := `<h1>404</h1>
 <p>Page Not Found</p>`
 
   headers := `HTTP/1.1 404 Not Found
@@ -119,7 +109,7 @@ Content-Length: ` + strconv.Itoa(len(body))
   return headers + "\r\n\r\n" + body
 }
 
-func parseRequest(requestString string) (Request) {
+func parseRequest(requestString string) Request {
   lines := strings.Split(requestString, "\r\n")
   header, fieldsBody := lines[0], lines[1:]
   headerFields := strings.Split(header, " ")
