@@ -4,9 +4,9 @@ import (
   "fmt"
   "net"
   "os"
-  "io/ioutil"
-  "bytes"
   "strings"
+  "strconv"
+  "log"
 )
 
 type Request struct {
@@ -20,26 +20,103 @@ type Request struct {
 func main() {
   service := ":1200"
   tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
+  fmt.Println("listening on: ", tcpAddr)
   checkError(err)
   listener, err := net.ListenTCP("tcp", tcpAddr)
+
+  // close the tcp listener when that application closes
+  defer listener.Close()
+
   checkError(err)
+
   for {
       conn, err := listener.Accept()
       if err != nil {
         continue
       }
 
-      request, error := readConnection(conn)
-      if error != nil {
-        continue
+      // Read connection into a byte array
+      // and convert into a Request
+      buffer := make([]byte, 1024)
+      reqLen, err := conn.Read(buffer)
+      if err != nil {
+        fmt.Println("Error reading from connection: ", err)
+      }
+      request := parseRequest(string(buffer[:reqLen]))
+
+      log.Println(request)
+
+
+
+      routes := map[string]func(Request)(string){
+        "/": getIndex,
+        "post": getPost,
+        "*": notFound,
       }
 
-      buf := new(bytes.Buffer)
-      buf.ReadFrom(bytes.NewReader(request))
-      s := buf.String()
-      req := parseRequest(s)
-      go handleClient(conn, req)
+      conn.Write([]byte(routes[request.path](request)))
+
+
+      // switch request.path {
+      // case "/":
+      //   conn.Write([]byte(getIndex(request)))
+      // case "/post":
+      //   conn.Write([]byte(getPost(request)))
+      // default:
+      //   conn.Write([]byte(notFound(request)))
+      // }
+
+
+      // conn.Write([]byte(response))
+      conn.Close()
   }
+}
+
+func getIndex(req Request) (string) {
+  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
+<h1>home page<h1>`
+
+  headers := `HTTP/1.1 200 OK
+Server: JasperGo
+Content-type: text/html
+Connection: Keep-Alive
+Keep-Alive: timeout=5, max=997
+Transfer-Encoding: identity
+Content-Length: ` + strconv.Itoa(len(body))
+
+  return headers + "\r\n\r\n" + body
+}
+
+func getPost(req Request) (string) {
+  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
+<h1>A Post<h1>
+<p>Lorem Ipsom</p>`
+
+  headers := `HTTP/1.1 200 OK
+Server: JasperGo
+Content-type: text/html
+Connection: Keep-Alive
+Keep-Alive: timeout=5, max=997
+Transfer-Encoding: identity
+Content-Length: ` + strconv.Itoa(len(body))
+
+  return headers + "\r\n\r\n" + body
+}
+
+func notFound(req Request) (string) {
+  body := `<style type="text/css">body{background: #222; color:#eaeaea;}</style>
+<h1>404<h1>
+<p>Page Not Found</p>`
+
+  headers := `HTTP/1.1 404 Not Found
+Server: JasperGo
+Content-type: text/html
+Connection: Keep-Alive
+Keep-Alive: timeout=5, max=997
+Transfer-Encoding: identity
+Content-Length: ` + strconv.Itoa(len(body))
+
+  return headers + "\r\n\r\n" + body
 }
 
 func parseRequest(requestString string) (Request) {
@@ -61,34 +138,7 @@ func parseRequest(requestString string) (Request) {
       req.accept = kv[1]
     }
   }
-
   return req
-}
-func readConnection(conn net.Conn) ([]byte, error) {
-  fmt.Println("XXX about to read from connection")
-  defer fmt.Println("XXX finished reading from connection")
-
-  bytes, err := ioutil.ReadAll(conn)
-  if err != nil {
-    fmt.Println(err)
-  }
-  return bytes, err
-}
-
-func handleClient(conn net.Conn, req Request) {
-  defer conn.Close()
-
-  fmt.Printf("%+v\n", req)
-
-  if req.path == "/pages" {
-    getPages(req, conn)
-  }
-}
-
-func getPages(req Request, conn net.Conn) {
-  fmt.Println("in getPages")
-  html := "<h1>Hello World</h1>"
-  conn.Write([]byte(html))
 }
 
 func checkError(err error) {
