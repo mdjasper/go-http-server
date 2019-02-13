@@ -30,11 +30,13 @@ func main() {
   checkError(err)
 
   for {
-      conn, err := listener.Accept()
-      if err != nil {
-        continue
-      }
+    conn, err := listener.Accept() // Blocking. Waits for connection
+    if err != nil {
+      log.Println("recieved connection, but errored: ", err)
+      continue
+    }
 
+    go func(){
       // Read connection into a byte array
       // and convert into a Request
       buffer := make([]byte, 1024)
@@ -44,7 +46,7 @@ func main() {
       }
       request := parseRequest(string(buffer[:reqLen]))
 
-      log.Println(request)
+      log.Printf("%+v\n", request)
 
       var responseBody string
 
@@ -57,9 +59,9 @@ func main() {
         responseBody = notFound(request)
       }
 
-
       conn.Write([]byte(responseBody))
       conn.Close()
+    }()
   }
 }
 
