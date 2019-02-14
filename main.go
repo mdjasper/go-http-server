@@ -4,18 +4,9 @@ import (
   "fmt"
   "net"
   "os"
-  "strings"
   "strconv"
   "log"
 )
-
-type Request struct {
-  host string
-  userAgent string
-  accept string
-  method string
-  path string
-}
 
 func main() {
   service := ":1200"
@@ -44,7 +35,7 @@ func main() {
       if err != nil {
         fmt.Println("Error reading from connection: ", err)
       }
-      request := parseRequest(string(buffer[:reqLen]))
+      request := MakeRequestFromString(string(buffer[:reqLen]))
 
       log.Printf("%+v\n", request)
 
@@ -69,15 +60,16 @@ func getIndex(req Request) string {
   body := `<h1>home page</h1>
 <p><a href="/post">post</a></p>`
 
-  headers := `HTTP/1.1 200 OK
-Server: JasperGo
-Content-type: text/html
-Connection: Keep-Alive
-Keep-Alive: timeout=5, max=997
-Transfer-Encoding: identity
-Content-Length: ` + strconv.Itoa(len(body))
+  headers := make(map[string]string)
 
-  return headers + "\r\n\r\n" + body
+  headers["Server"] = "JasperGo"
+  headers["Content-Type"] = "text/html"
+  headers["Connection"] = "Keep-Alive"
+  headers["Keep-Alive"] = "timeout=5, max=997"
+  headers["Transfer-Encoding"] = "identity"
+  headers["Content-Length"] = strconv.Itoa(len(body))
+
+  return response(200, headers, body)
 }
 
 func getPost(req Request) string {
@@ -109,28 +101,6 @@ Transfer-Encoding: identity
 Content-Length: ` + strconv.Itoa(len(body))
 
   return headers + "\r\n\r\n" + body
-}
-
-func parseRequest(requestString string) Request {
-  lines := strings.Split(requestString, "\r\n")
-  header, fieldsBody := lines[0], lines[1:]
-  headerFields := strings.Split(header, " ")
-  req := Request{
-    method: headerFields[0],
-    path: headerFields[1],
-  }
-  for _, line := range fieldsBody{
-    kv := strings.Split(line, ": ")
-    switch kv[0] {
-    case "Host":
-      req.host = kv[1]
-    case "User-Agent":
-      req.userAgent = kv[1]
-    case "Accept":
-      req.accept = kv[1]
-    }
-  }
-  return req
 }
 
 func checkError(err error) {
