@@ -4,8 +4,10 @@ import (
   "fmt"
   "net"
   "os"
-  "strconv"
   "log"
+  "io/ioutil"
+  "path/filepath"
+  "regexp"
 )
 
 func main() {
@@ -41,14 +43,18 @@ func main() {
 
       var responseBody string
 
-      switch request.path {
-      case "/":
-        responseBody = getIndex(request)
-      case "/post":
-        responseBody = getPost(request)
-      default:
-        responseBody = notFound(request)
+      //default to 404
+      responseBody = notFound(request)
+
+      //look for static requests
+      staticRxp, err := regexp.Compile("/static/(.*)")
+      if len(staticRxp.FindStringSubmatch(request.path)) > 0 {
+        responseBody = getStatic(staticRxp.FindStringSubmatch(request.path)[1], request)
       }
+
+      //custom routes
+      if request.path == "/" { responseBody = getIndex(request) }
+      if request.path == "/post" { responseBody = getIndex(request) }
 
       conn.Write([]byte(responseBody))
       conn.Close()
@@ -57,50 +63,46 @@ func main() {
 }
 
 func getIndex(req Request) string {
-  body := `<h1>home page</h1>
-<p><a href="/post">post</a></p>`
+  body := `<html><body>
+<h1>home page</h1>
+<p><a href="/post">post</a></p>
+<p><img src="/static/golang_128x128.png"/></p>
+</body></html>`
 
-  headers := make(map[string]string)
-
-  headers["Server"] = "JasperGo"
-  headers["Content-Type"] = "text/html"
-  headers["Connection"] = "Keep-Alive"
-  headers["Keep-Alive"] = "timeout=5, max=997"
-  headers["Transfer-Encoding"] = "identity"
-  headers["Content-Length"] = strconv.Itoa(len(body))
+  headers := DefaultHtmlHeaders()
 
   return response(200, headers, body)
 }
 
 func getPost(req Request) string {
-  body := `<h1>A Post</h1>
+  body := `<html><body><h1>A Post</h1>
 <p>Lorem Ipsom</p>
-<p><a href="/">index</a></p>`
+<p><a href="/">index</a></p></body></html>`
 
-  headers := `HTTP/1.1 200 OK
-Server: JasperGo
-Content-type: text/html
-Connection: Keep-Alive
-Keep-Alive: timeout=5, max=997
-Transfer-Encoding: identity
-Content-Length: ` + strconv.Itoa(len(body))
+  headers := DefaultHtmlHeaders()
 
-  return headers + "\r\n\r\n" + body
+  return response(200, headers, body)
+}
+
+func getStatic(path string, req Request) string {
+  imagePath, _ := filepath.Abs("static/"+ path)
+  fmt.Println("finding ", imagePath)
+  file, err := ioutil.ReadFile(imagePath)
+  if err != nil {
+    return notFound(req)
+  }
+  body := string(file[:])
+  headers := PngHeaders()
+  return response(200, headers, body)
 }
 
 func notFound(req Request) string {
-  body := `<h1>404</h1>
-<p>Page Not Found</p>`
+  body := `<html><body><h1>404</h1>
+<p>Page Not Found</p></body></html>`
 
-  headers := `HTTP/1.1 404 Not Found
-Server: JasperGo
-Content-type: text/html
-Connection: Keep-Alive
-Keep-Alive: timeout=5, max=997
-Transfer-Encoding: identity
-Content-Length: ` + strconv.Itoa(len(body))
+  headers := DefaultHtmlHeaders()
 
-  return headers + "\r\n\r\n" + body
+  return response(200, headers, body)
 }
 
 func checkError(err error) {
