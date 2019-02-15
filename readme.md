@@ -14,6 +14,13 @@ to one of several handlers (static, not found, index, etc). The handlers generat
 an appropriate response (html, image asset, etc) and the response is written
 to the TCP connection which is then closed.
 
+## Routing
+
+The router is a function which returns a function which returns the response
+(headers + body) as a string. These handlers can be anonymous closures or named
+functions, as long as the method signature matches. Path matches are evaluated
+in the order that they are declared.
+
 ## Usage
 
 go-http-server may be useful for study of basic HTTP server architecture, but has

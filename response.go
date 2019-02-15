@@ -1,15 +1,15 @@
 package main
 
-import(
-  "strconv"
+import (
+	"strconv"
 )
 
 func response(status int, headers Headers, body string) string {
-  headers["Content-Length"] = strconv.Itoa(len(body)+2)
+	headers["Content-Length"] = strconv.Itoa(len(body) + 2)
 
-  return "HTTP/1.1 " +
-          HttpStatusCodes[status] +
-          "\r\n" + headers.String() +
-          "\r\n" +
-          body
+	return "HTTP/1.1 " +
+		HttpStatusCodes[status] +
+		"\r\n" + headers.String() +
+		"\r\n" +
+		body
 }
