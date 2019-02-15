@@ -14,18 +14,21 @@ func main() {
   service := ":1200"
   tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
   fmt.Println("listening on: ", tcpAddr)
-  checkError(err)
+
   listener, err := net.ListenTCP("tcp", tcpAddr)
+
+  if err != nil {
+    log.Println("Could not open TCP connection", err)
+  }
 
   // close the tcp listener when that application closes
   defer listener.Close()
 
-  checkError(err)
 
   for {
     conn, err := listener.Accept() // Blocking. Waits for connection
     if err != nil {
-      log.Println("recieved connection, but errored: ", err)
+      log.Println("recieved connection, but errored", err)
       continue
     }
 
@@ -35,7 +38,7 @@ func main() {
       buffer := make([]byte, 1024)
       reqLen, err := conn.Read(buffer)
       if err != nil {
-        fmt.Println("Error reading from connection: ", err)
+        fmt.Println("Error reading from connection", err)
       }
       request := MakeRequestFromString(string(buffer[:reqLen]))
 
