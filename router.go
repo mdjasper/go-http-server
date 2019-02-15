@@ -11,23 +11,23 @@ func router(req Request) func(Request) string {
 
 	// static files
 	staticRxp, _ := regexp.Compile("/static/(.*)")
-	if len(staticRxp.FindStringSubmatch(req.path)) > 0 {
+	if len(staticRxp.FindStringSubmatch(req["path"])) > 0 {
 		return func(req Request) string {
-			return getStatic(staticRxp.FindStringSubmatch(req.path)[1], req)
+			return getStatic(staticRxp.FindStringSubmatch(req["path"])[1], req)
 		}
 	}
 
 	// index route
-	if req.path == "/" {
+	if req["path"] == "/" {
 		return getIndex
 	}
 
 	// posts route
-	if req.path == "/post" {
+	if req["path"] == "/post" {
 		return getPost
 	}
 
-	if req.path == "/favicon.ico" {
+	if req["path"] == "/favicon.ico" {
 		return func(req Request) string {
 			return getStatic("gopher3.png", req)
 		}

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -36,7 +37,8 @@ func main() {
 			if err != nil {
 				fmt.Println("Error reading from connection", err)
 			}
-			request := MakeRequestFromString(string(buffer[:reqLen]))
+			requestString := strings.TrimSpace(string(buffer[:reqLen]))
+			request := MakeRequestFromString(requestString)
 
 			log.Printf("%+v\n", request)
 

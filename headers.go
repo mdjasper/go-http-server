@@ -13,7 +13,7 @@ func (h Headers) String() string {
 }
 
 func DefaultHtmlHeaders() Headers {
-	headers := make(map[string]string)
+	headers := make(Headers)
 
 	headers["Server"] = "JasperGo"
 	headers["Content-Type"] = "text/html"
@@ -25,7 +25,7 @@ func DefaultHtmlHeaders() Headers {
 }
 
 func PngHeaders() Headers {
-	headers := make(map[string]string)
+	headers := make(Headers)
 
 	headers["Server"] = "JasperGo"
 	headers["Content-Type"] = "image/png"
