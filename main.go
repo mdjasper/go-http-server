@@ -40,8 +40,7 @@ func main() {
 
 			log.Printf("%+v\n", request)
 
-			resolveFn := router(request)
-			responseString := resolveFn(request)
+			responseString := router(request)(request)
 
 			conn.Write([]byte(responseString))
 			conn.Close()

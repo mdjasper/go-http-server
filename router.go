@@ -27,6 +27,12 @@ func router(req Request) func(Request) string {
 		return getPost
 	}
 
+	if req.path == "/favicon.ico" {
+		return func(req Request) string {
+			return getStatic("gopher3.png", req)
+		}
+	}
+
 	// 404 if nothing else matched
 	return notFound
 }
