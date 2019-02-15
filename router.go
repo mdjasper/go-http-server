@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
@@ -61,7 +60,6 @@ func getPost(req Request) string {
 
 func getStatic(path string, req Request) string {
 	imagePath, _ := filepath.Abs("static/" + path)
-	fmt.Println("finding ", imagePath)
 	file, err := ioutil.ReadFile(imagePath)
 	if err != nil {
 		return notFound(req)

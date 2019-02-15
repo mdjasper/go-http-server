@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
-	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -16,7 +15,7 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 
 	if err != nil {
-		log.Println("Could not open TCP connection", err)
+		fmt.Println("Could not open TCP connection", err)
 	}
 
 	// close the tcp listener when that application closes
@@ -25,7 +24,7 @@ func main() {
 	for {
 		conn, err := listener.Accept() // Blocking. Waits for connection
 		if err != nil {
-			log.Println("recieved connection, but errored", err)
+			fmt.Println("recieved connection, but errored", err)
 			continue
 		}
 
@@ -37,22 +36,17 @@ func main() {
 			if err != nil {
 				fmt.Println("Error reading from connection", err)
 			}
+
+			//
 			requestString := strings.TrimSpace(string(buffer[:reqLen]))
 			request := MakeRequestFromString(requestString)
-
-			log.Printf("%+v\n", request)
+			fmt.Printf("\033[1;36m%s\033[0m", time.Now().Format("2006-01-02 15:04:05")+" [Go Server] ")
+			fmt.Printf("%+v\n", request)
 
 			responseString := router(request)(request)
 
 			conn.Write([]byte(responseString))
 			conn.Close()
 		}()
-	}
-}
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
-		os.Exit(1)
 	}
 }
