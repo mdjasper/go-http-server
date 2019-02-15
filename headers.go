@@ -13,27 +13,27 @@ func (h Headers) String() string {
 }
 
 func DefaultHtmlHeaders() Headers {
-	headers := make(map[string]string)
+  headers := make(map[string]string)
 
-	headers["Server"] = "JasperGo"
+  headers["Server"] = "JasperGo"
   headers["Content-Type"] = "text/html"
   headers["Connection"] = "Keep-Alive"
   headers["Keep-Alive"] = "timeout=5, max=997"
-	headers["Transfer-Encoding"] = "identity"
+  headers["Transfer-Encoding"] = "identity"
 
-	return headers
+  return headers
 }
 
 func PngHeaders() Headers {
-	headers := make(map[string]string)
+  headers := make(map[string]string)
 
-	headers["Server"] = "JasperGo"
-	headers["Content-Type"] = "image/png"
+  headers["Server"] = "JasperGo"
+  headers["Content-Type"] = "image/png"
   headers["Connection"] = "Keep-Alive"
   headers["Keep-Alive"] = "timeout=5, max=997"
-	headers["Transfer-Encoding"] = "identity"
-	headers["Content-Transfer-Encoding"] = "binary"
-	headers["Content-Disposition"] = "inline;"
+  headers["Transfer-Encoding"] = "identity"
+  headers["Content-Transfer-Encoding"] = "binary"
+  headers["Content-Disposition"] = "inline;"
 
-	return headers
+  return headers
 }

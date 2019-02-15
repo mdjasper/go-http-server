@@ -1,7 +1,7 @@
 package main
 
 import(
-	"strings"
+  "strings"
 )
 
 type Request struct {
@@ -13,12 +13,12 @@ type Request struct {
 }
 
 func MakeRequestFromString(requestString string) Request{
-	r := Request{}
+  r := Request{}
   lines := strings.Split(requestString, "\r\n")
   header, fieldsBody := lines[0], lines[1:]
   headerFields := strings.Split(header, " ")
-	r.path = headerFields[1]
-	r.method = headerFields[0]
+  r.path = headerFields[1]
+  r.method = headerFields[0]
   for _, line := range fieldsBody{
     kv := strings.Split(line, ": ")
     switch kv[0] {
@@ -29,6 +29,6 @@ func MakeRequestFromString(requestString string) Request{
     case "Accept":
       r.accept = kv[1]
     }
-	}
-	return r
+  }
+  return r
 }
