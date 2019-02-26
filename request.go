@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strings"
 	"bufio"
 	"net"
+	"strings"
 )
 
 type Request map[string]string
