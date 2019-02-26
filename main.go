@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net"
-	"strings"
 	"time"
 )
 
@@ -35,16 +34,9 @@ func main() {
 
 		// Handle incoming connections in a thread
 		go func() {
-			// Read connection into a byte array
-			buffer := make([]byte, 1024)
-			reqLen, err := conn.Read(buffer)
-			if err != nil {
-				fmt.Println("Error reading from connection", err)
-			}
+			// build a Request from the connection (map of http method, path, and headers)
+			request := MakeRequestFromConnection(conn)
 
-			// Transform the request byte array into a map of headers
-			requestString := strings.TrimSpace(string(buffer[:reqLen]))
-			request := MakeRequestFromString(requestString)
 			// Log the incoming request
 			fmt.Printf("\033[1;36m%s\033[0m", time.Now().Format("2006-01-02 15:04:05")+" [Go Server] ")
 			fmt.Printf("%+v\n", request)
