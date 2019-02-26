@@ -8,7 +8,7 @@ import (
 type Headers map[string]string
 
 func (h Headers) String() string {
-	// strings.Build minimizes memory copying for each header value
+	// strings.Builder minimizes memory copying for each header value
 	// which would occur with string concatenation
 	var headerString strings.Builder
 	for k, v := range h {
